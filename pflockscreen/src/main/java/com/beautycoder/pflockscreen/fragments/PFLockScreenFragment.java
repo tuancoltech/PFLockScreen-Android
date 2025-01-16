@@ -22,10 +22,12 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.beautycoder.pflockscreen.PFFLockScreenConfiguration;
 import com.beautycoder.pflockscreen.R;
 import com.beautycoder.pflockscreen.security.PFResult;
+import com.beautycoder.pflockscreen.security.PINValidatationKt;
 import com.beautycoder.pflockscreen.viewmodels.PFPinCodeViewModel;
 import com.beautycoder.pflockscreen.views.PFCodeView;
 
@@ -102,14 +104,14 @@ public class PFLockScreenFragment extends Fragment {
 
         mCodeView.setListener(mCodeListener);
 
-        if (!mUseFingerPrint) {
-            mFingerprintButton.setVisibility(View.GONE);
-        }
-
-        mFingerprintHardwareDetected = isFingerprintApiAvailable(getContext());
-
         mRootView = view;
         applyConfiguration(mConfiguration);
+
+        if (!mUseFingerPrint) {
+            mFingerprintButton.setVisibility(View.GONE);
+        } else {
+            mFingerprintHardwareDetected = isFingerprintApiAvailable(getContext());
+        }
 
         return view;
     }
@@ -307,6 +309,11 @@ public class PFLockScreenFragment extends Fragment {
         @Override
         public void onCodeCompleted(String code) {
             if (mIsCreateMode) {
+                if (!PINValidatationKt.isValidPin(code)) {
+                    Toast.makeText(getContext(), getString(R.string.use_stronger_pin),
+                                    Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 mNextButton.setVisibility(View.VISIBLE);
                 mCode = code;
                 return;
